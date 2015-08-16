@@ -1,0 +1,17 @@
+{
+  "name": "hackrf-stream",
+  "version": "0.1.1",
+  "description": "A stream interface to receive and transmit on a HackRF radio",
+  "main": "index.js",
+  "bin": {
+    "hackrf-pipe": "bin.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "hackrf": "^2.1.0"
+  }
+}

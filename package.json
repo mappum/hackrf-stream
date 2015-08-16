@@ -1,6 +1,6 @@
 {
   "name": "hackrf-stream",
-  "version": "0.1.1",
+  "version": "0.3.0",
   "description": "A stream interface to receive and transmit on a HackRF radio",
   "main": "index.js",
   "bin": {
@@ -12,6 +12,6 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "hackrf": "^2.1.0"
+    "hackrf": "^2.3.0"
   }
 }

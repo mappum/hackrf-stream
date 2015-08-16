@@ -14,13 +14,19 @@ var tx = radio.createWriteStream()
 
 radio.setFrequency(2.55e9)
 
-rx.on('data', function (chunk) {
-  tx.write(chunk)
-})
+// transmit input taken from stdin
+process.stdin.pipe(tx)
+// pipe received data to stdout
+rx.pipe(process.stdout)
 ```
 
-### `var radio = require('hackrf-stream')()`
-Returns the first device found
+### `var radio = require('hackrf-stream')([opts])`
+Returns the first device found.
+Available options for `opts`:
+
+  * `closeOnExit` - if `true`, the radio will automatically be closed on `process.exit` or `SIGINT` (Ctrl-C)
+
+Note that the device will continue transmitting after your program terminates, unless you use the `closeOnExit` option or manually call `radio.close`.
 
 ### `radio.createReadStream()`
 Returns a readable stream which emits raw sample data received by the radio.
@@ -38,6 +44,9 @@ Set the number of samples per second for both receiving and transmitting. The ra
 
 ### `radio.setBandwidth(bw_Mhz, [callback])`
 Set the filter bandwidth (this makes so data we receive only includes signals within a certain range of the frequency passed to `setFrequency`). The bandwidth must be one of the following: `1.75, 2.5, 3.5, 5, 5.5, 6, 7, 8, 9, 10, 12, 14, 15, 20, 24, 28`.
+
+### `radio.close([callback])`
+Stops receiving and transmitting, and releases the device so it may be used by other processes.
 
 ### `radio.device`
 A handle to the underlying device returned by the `hackrf` package. See the [hackrf module's README](https://github.com/mappum/node-hackrf/blob/master/README.md) for documentation about the device's API.

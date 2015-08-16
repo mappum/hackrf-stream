@@ -4,24 +4,33 @@ var util = require('util')
 var hackrf = require('hackrf')
 
 // TODO: device selection
-module.exports = function () {
-  return new Radio(hackrf())
+module.exports = function (opts) {
+  return new Radio(hackrf(), opts)
 }
 
-var Radio = function (device) {
+var Radio = function (device, opts) {
   if (!(this instanceof Radio)) {
     return new Radio(device)
   }
+
+  opts = opts || {}
+  this.closeOnExit = opts.closeOnExit
 
   this.device = device
   this.rx = null
   this.tx = null
   this.receiving = false
   this.transmitting = false
+  this.closing = false
 
   this.setFrequency = device.setFrequency
   this.setSampleRate = device.setSampleRate
   this.setBandwidth = device.setBandwidth
+
+  if (this.closeOnExit) {
+    process.on('exit', this.close.bind(this))
+    process.on('SIGINT', this.close.bind(this, process.exit))
+  }
 }
 util.inherits(Radio, events.EventEmitter)
 
@@ -35,6 +44,17 @@ Radio.prototype.createWriteStream = function () {
   if (this.tx) return this.tx
   this.tx = new TxStream(this)
   return this.tx
+}
+
+Radio.prototype.close = function (cb) {
+  var self = this
+  if (this.closing) return
+  this.closing = true
+  this._stopRx(function () {
+    self._stopTx(function () {
+      self.device.close(cb || function () {})
+    })
+  })
 }
 
 Radio.prototype._stopRx = function (cb) {
@@ -72,6 +92,7 @@ RxStream.prototype._rx = function () {
   var self = this
 
   if (this.radio.receiving) return
+  if (this.radio.closing) return
   if (this.radio.transmitting) {
     this.radio.once('endtx', this._rx.bind(this))
     return
@@ -100,6 +121,7 @@ TxStream.prototype._write = function (input, encoding, cb) {
 TxStream.prototype._tx = function (input, encoding, cb, resume) {
   var self = this
 
+  if (this.radio.closing) return
   if (this.radio.receiving) {
     this.radio._stopRx(function () {
       self._tx(input, encoding, cb, true)

@@ -1,17 +1,12 @@
-var radio = require('./')()
+var radio = require('./')({ closeOnExit: true })
 
 radio.device.setFrequency(2.4e9, function () {
   radio.device.setBandwidth(10e6, function () {
     var rx = radio.createReadStream()
     var tx = radio.createWriteStream()
 
-    rx.on('data', function (chunk) {
-      console.log('received:', chunk)
-    })
-    setInterval(function () {
-      console.log('transmitting')
-      tx.write(new Buffer(5e6))
-    }, 1000)
+    process.stdin.pipe(tx)
+    rx.pipe(process.stdout)
   })
 })
 

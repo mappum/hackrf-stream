@@ -18,6 +18,10 @@ var Radio = function (device) {
   this.tx = null
   this.receiving = false
   this.transmitting = false
+
+  this.setFrequency = device.setFrequency
+  this.setSampleRate = device.setSampleRate
+  this.setBandwidth = device.setBandwidth
 }
 util.inherits(Radio, events.EventEmitter)
 
@@ -33,7 +37,7 @@ Radio.prototype.createWriteStream = function () {
   return this.tx
 }
 
-Radio.prototype.stopRx = function (cb) {
+Radio.prototype._stopRx = function (cb) {
   var self = this
   if (!this.receiving) return cb(new Error('Not receiving'))
   this.device.stopRx(function () {
@@ -43,7 +47,7 @@ Radio.prototype.stopRx = function (cb) {
   })
 }
 
-Radio.prototype.stopTx = function (cb) {
+Radio.prototype._stopTx = function (cb) {
   var self = this
   if (!this.transmitting) return cb(new Error('Not transmitting'))
   this.device.stopTx(function () {
@@ -77,7 +81,7 @@ RxStream.prototype._rx = function () {
   this.radio.emit('startrx')
   this.device.startRx(function (data, done) {
     var res = self.push(data)
-    if (!res) self.radio.stopRx()
+    if (!res) self.radio._stopRx()
     done()
   })
 }
@@ -97,7 +101,7 @@ TxStream.prototype._tx = function (input, encoding, cb, resume) {
   var self = this
 
   if (this.radio.receiving) {
-    this.radio.stopRx(function () {
+    this.radio._stopRx(function () {
       self._tx(input, encoding, cb, true)
     })
     return
@@ -115,7 +119,7 @@ TxStream.prototype._tx = function (input, encoding, cb, resume) {
 
     if (input.length) return
 
-    self.radio.stopTx(function () {
+    self.radio._stopTx(function () {
       if (resume) self.radio.rx._rx()
       cb()
     })

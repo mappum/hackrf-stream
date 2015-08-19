@@ -8,10 +8,16 @@ npm install hackrf-stream
 ## API
 
 ```js
-var radio = require('hackrf-stream')()
+// get a list of devices
+var devices = require('hackrf-stream')()
+// open the first device
+var radio = devices.open(0)
+// create a readable stream for receiving
 var rx = radio.createReadStream()
+// create a writable stream for transmitting
 var tx = radio.createWriteStream()
 
+// tune to the frequency we want to send/receive on
 radio.setFrequency(2.55e9)
 
 // transmit input taken from stdin
@@ -20,8 +26,11 @@ process.stdin.pipe(tx)
 rx.pipe(process.stdout)
 ```
 
-### `var radio = require('hackrf-stream')([opts])`
-Returns the first device found.
+### `var devices = require('hackrf-stream')()`
+Returns an array containing information about the connected HackRF devices. If no devices are found, an empty array is returned.
+
+### `var radio = devices.open(deviceIndex, [opts])`
+Opens the device with index `deviceIndex`, using the specified options (if any).
 Available options for `opts`:
 
   * `closeOnExit` - if `true`, the radio will automatically be closed on `process.exit` or `SIGINT` (Ctrl-C)

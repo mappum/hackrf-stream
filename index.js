@@ -3,9 +3,13 @@ var stream = require('stream')
 var util = require('util')
 var hackrf = require('hackrf')
 
-// TODO: device selection
-module.exports = function (opts) {
-  return new Radio(hackrf(), opts)
+module.exports = function () {
+  var devices = hackrf()
+  var open = devices.open
+  devices.open = function (i, opts) {
+    return new Radio(open(i), opts)
+  }
+  return devices
 }
 
 var Radio = function (device, opts) {

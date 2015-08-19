@@ -12,6 +12,6 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "hackrf": "^3.0.0"
+    "hackrf": "^3.0.1"
   }
 }
